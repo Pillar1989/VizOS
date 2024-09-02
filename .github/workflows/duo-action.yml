@@ -1,0 +1,128 @@
+name: Compile DUO istoreOS Image
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - vizos
+    paths:
+      - 'build/Tianling_source/start-up/start'
+
+  schedule:
+   - cron: 0 17 * * 5
+
+env:
+  Github: https://github.com/${{github.repository}}
+  Author: ${{github.actor}}
+  Apidz: ${{github.repository}}
+  Run_number: ${{github.run_number}}
+  Run_workflow: ${{github.workflow}}
+  REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+  TZ: Asia/Shanghai
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    name: Compile "${{matrix.target}}"
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [OpenWrt_source]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+
+    - name: Prepare build env
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        docker rmi `docker images -q`
+        sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
+        sudo -E apt-mark hold grub-efi-amd64-signed
+        sudo -E apt update
+        sudo -E apt -y purge azure-cli* docker* ghc* zulu* llvm* firefox google* dotnet* powershell* openjdk* mysql* php* mongodb* dotnet* snap*
+        sudo -E apt -y full-upgrade
+        sudo -E apt -y install ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils rsync rename scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
+        sudo -E systemctl daemon-reload
+        sudo -E apt -y autoremove --purge
+        sudo -E apt clean
+        sudo -E timedatectl set-timezone "Asia/Shanghai"
+        echo "================================================="
+        echo "文件系统        类型   容量  已用  可用 使用% 挂载点"
+        df -hT $PWD
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /${{matrix.target}}
+        sudo chown $USER:$GROUPS /${{matrix.target}}
+        wget https://sophon-file.sophon.cn/sophon-prod-s3/drive/23/03/07/16/host-tools.tar.gz
+        tar xf host-tools.tar.gz
+        sudo mv host-tools /opt/host-tools
+
+        wget https://mirrors.sdu.edu.cn/ubuntu/ubuntu/pool/universe/g/genimage/genimage_16-2_amd64.deb
+        sudo apt install libconfuse2 genext2fs
+        sudo dpkg -i genimage_16-2_amd64.deb
+        rm genimage_16-2_amd64.deb
+    
+    - name: Compile Milk-V Duo Image
+      id: compile-milk-v-duo
+      working-directory: /${{matrix.target}}
+      run: |
+        git clone -b vizos --single-branch  https://github.com/draftbottle/VizOS feeds-vizos
+        git clone https://github.com/draftbottle/istoreos --single-branch
+        echo "src-link  vizos  ${PWD}/feeds-vizos" >> istoreos/feeds.conf.default
+        cd istoreos
+        cat feeds.conf.default
+        ./scripts/feeds update  vizos
+        ./scripts/feeds install vizos
+        ./scripts/feeds install -f sophgo
+        ./scripts/feeds install -f uboot-sophgo
+
+        cp ../feeds-vizos/configs/cv180x-config .config
+        echo -e "$(nproc) thread compile"
+        make -j$(nproc) || make package/feeds/vizos/uboot-sophgo/compile V=s
+        make -j1 V=s
+        echo "::set-output name=status::success"
+
+    - name: Upload Milk-V Duo Image
+      if: steps.compile-milk-v-duo.outputs.status == 'success'
+      uses: actions/upload-artifact@master
+      with:
+        name: milk-v-duo-image
+        path: /${{matrix.target}}/istoreos/bin/targets/sophgo/cv180x/
+
+
+    - name: Compile Milk-V Duo256m Image
+      id: compile-milk-v-duo256m
+      run: |
+        cd /${{matrix.target}}/istoreos
+        cp ../feeds-vizos/configs/cv181x-milkv-duo256m-config .config
+        echo -e "$(nproc) thread compile"
+        make -j$(nproc) || make package/feeds/vizos/uboot-sophgo/compile V=s
+        make -j1 V=s
+        echo "::set-output name=status::success"
+
+    - name: Upload Milk-V Duo256m Image
+      if: steps.compile-milk-v-duo256m.outputs.status == 'success'
+      uses: actions/upload-artifact@master
+      with:
+        name: milk-v-duo256m-image
+        path: /${{matrix.target}}/istoreos/bin/targets/sophgo/cv181x/
+
+    - name: Compile Milk-V DuoS Image
+      id: compile-milk-v-duos
+      run: |
+        cd /${{matrix.target}}/istoreos
+        cp ../feeds-vizos/configs/cv181x-milkv-duos-config .config
+        echo -e "$(nproc) thread compile"
+        make -j$(nproc) || make package/feeds/vizos/uboot-sophgo/compile V=s
+        make -j1 V=s
+        echo "::set-output name=status::success"
+
+    - name: Upload Milk-V DuoS Image
+      if: steps.compile-milk-v-duos.outputs.status == 'success'
+      uses: actions/upload-artifact@master
+      with:
+        name: milk-v-duos-image
+        path: /${{matrix.target}}/istoreos/bin/targets/sophgo/cv181x/

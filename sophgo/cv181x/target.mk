@@ -6,7 +6,7 @@ SUBTARGET:=cv181x
 BOARDNAME:=cv181x based boards
 DTSDIR:=cvitek
 
-DEVICE_PACKAGES := u-boot-huashanpi
+DEVICE_PACKAGES := u-boot-milkvduo256m
 
 
 define Target/Description

@@ -10,9 +10,9 @@ PKG_RELEASE:=1
 PKG_VERSION:=2021.10
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL=https://github.com/Pillar1989/uboot-sophgo
-PKG_SOURCE_VERSION:=3779bc1103f01422107e936b3e8cc099ab353763
-PKG_MIRROR_HASH=c4409eea747f63e7234cc53bd77a4ae343d73493fd4fe1c840d7f51862868ba7
+PKG_SOURCE_URL=https://github.com/draftbottle/uboot-sophgo
+PKG_SOURCE_VERSION:=59f64ab3055253b2cc752391c3c6f37fa1f84e10
+PKG_MIRROR_HASH=b87bfdaa37594e5bad9f2714073735effefc2bd19a31b9a7d41b98226c0134cd
 
 include $(INCLUDE_DIR)/u-boot.mk
 include $(INCLUDE_DIR)/package.mk
@@ -62,12 +62,34 @@ define U-Boot/milkvduo
 		CHIP_SEGMENT=cv180x
 endef
 
+define U-Boot/milkvduo256m
+	NAME:=Sophgo milk-v duo256m
+	UBOOT_DTS:=cv1812cp_milkv_duo256m_sd.dtb
+	BUILD_DEVICES:=cvitek_cv1812cp_milkv_duo256m_sd
+	UBOOT_MAKE_FLAGS := \
+		CHIP=cv1812cp \
+		CVIBOARD=milkv_duo256m_sd \
+		BOARD=cv181x \
+		CHIP_SEGMENT=cv181x
+endef
+
+define U-Boot/milkvduos
+	NAME:=Sophgo milk-v duos
+	UBOOT_DTS:=cv1813h_milkv_duos_sd.dtb
+	BUILD_DEVICES:=cvitek_cv1813h_milkv_duos_sd
+	UBOOT_MAKE_FLAGS := \
+		CHIP=cv1813h \
+		CVIBOARD=milkv_duos_sd \
+		BOARD=cv181x \
+		CHIP_SEGMENT=cv181x
+endef
 
 
 UBOOT_TARGETS := \
 	huashanpi \
-	milkvduo
-
+	milkvduo \
+	milkvduo256m \
+	milkvduos
 
 
 

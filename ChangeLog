@@ -1,0 +1,37 @@
+2024.6.26
+    luci,opkg暂不可用(主要是哥们我不会修bug).
+    apk包管理器可正常使用,绝大部分软件包均能安装,初次开机使用会报错,但不影响使用,冷重启后可正常使用.
+    默认镜像的根目录较小,解决方法: ①apk下载工具扩容 ②menuconfig扩容.
+
+2024.7.7
+    修改network-init.sh
+
+2024.7.8
+    增加 kmod-nf-conntrack-netlink 软件包依赖,解决luci无法访问的问题.
+    Openwrt使用在线安装的方式安装luci界面,请一定要运行network-init.sh脚本,该脚本会安装必要的系统依赖.
+    当前脚本写的很烂的,每次开机都要运行此脚本配置网络,后续会尝试优化该脚本,请您谅解.(您可自行配置网络)
+    如果觉得自行编译麻烦,您也可以下载今天预编译的镜像使用.😋
+    请您手动安装luci.😅 ( opkg install luci )
+
+2024.7.14
+    增加base-files差异化配置,base-files中的许多库未移植完成,还不能用.(网上看到有buildroot移植opkg
+    成功的,不知duo能否移植)
+
+2024.8.13
+    duo的buildroot可以移植opkg等包管理器,可以安装使用小部分在线包.
+    duos的uboot暂不能使用,有些许问题待解决.同样的问题也出现在duoarm上.duoarm的问题也是uboot无法启动镜
+    像.待修复以后就可以使用了.待后面有时间再修复此问题.
+
+2024.8.14
+    milkv-duo相关更新: 无
+    milkv-duo256m和milkv-duos相关更新: 修复uboot-sophgo无法引导kernel的问题, 更新uboot仓库地址.😋
+    待修复问题: 启动后用户名显示为none, 可能是我的sd卡的问题? 希望有大佬帮忙测试一下.😅
+
+2024.8.16
+    milkv-duo相关更新: 无
+    milkv-duo256m和milkv-duos相关更新: 修复 openwrt 无法读写问题和用户名显示异常问题。目前milkv-duo
+    全系列可用😋。直接编译烧录至sd卡即可使用,无需替换bootloader和kernel。哈哈😄
+
+2024.8.23
+    lsusb等命令需要联网更新busybox后才可使用。
+    

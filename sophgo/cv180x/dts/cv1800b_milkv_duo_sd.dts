@@ -8,6 +8,10 @@
 	snsr-reset = <&portc 8 GPIO_ACTIVE_LOW>, <&portc 8 GPIO_ACTIVE_LOW>, <&portc 8 GPIO_ACTIVE_LOW>;
 };
 
+&ethernet0{
+	status = "okay";
+};
+
 / {
 
 };

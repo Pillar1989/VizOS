@@ -7,3 +7,11 @@ define Device/huashanpi
 endef
 TARGET_DEVICES += huashanpi
 
+define Device/milk-v-duo256m
+  DEVICE_VENDOR := milkv.io
+  DEVICE_MODEL := milkv-duo256m
+  DEVICE_DTS_DIR := ${PWD}/cv181x/dts
+  DEVICE_DTS := cv1812cp_milkv_duo256m_sd
+endef
+TARGET_DEVICES += milk-v-duo256m
+
